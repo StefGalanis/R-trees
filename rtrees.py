@@ -31,8 +31,9 @@ for key in orderedList:
 
 outputFile.close()
 leafNodeSize = int(1024/36)
+print('Block Size is: ',leafNodeSize)
 numberOfLeafNodes = round(numberOfRecords/leafNodeSize)
-print(numberOfLeafNodes)
+print('the number of leaf nodes are:',numberOfLeafNodes)
 partitionSize = round(math.sqrt(numberOfLeafNodes))
 print('Partition Size:' + str(partitionSize) + '\t Number of Records:' + str(numberOfRecords))
 counter = 0
@@ -64,8 +65,8 @@ bulkDataFile.close()
 nodeId = 0
 counter = 0
 parentNodeCounter = 0
+parentNodeList = []
 rTree = {}
-tempList = []
 leafNodeValue = ''
 
 with open('bulkDataFile.txt') as inputFile:
@@ -93,11 +94,11 @@ with open('bulkDataFile.txt') as inputFile:
                 #print(parentNodeId)
                 parentsValue = str(nodeId) + '\t' + str(xlow) + '\t' + str(xhigh) + '\t' + str(ylow) + '\t' + str(yhigh)
                 rTree[parentNodeId] = parentsValue
-
+                parentNodeList.append(parentNodeId)
                 parentNodeCounter += 1
                 nodeId += 2
 
-            elif parentNodeCounter < leafNodeSize :
+            elif parentNodeCounter < leafNodeSize - 1 :
                 #print('i got in and parent number is',parentNodeId)
                 parentsValue = str(nodeId) + '\t' + str(xlow) + '\t' + str(xhigh) + '\t' + str(ylow) + '\t' + str(yhigh)
                 previousValue = rTree[parentNodeId]
@@ -108,11 +109,52 @@ with open('bulkDataFile.txt') as inputFile:
                 nodeId += 1
 
             else :
-
-                parentNodeCounter = 0
+                parentsValue = str(nodeId) + '\t' + str(xlow) + '\t' + str(xhigh) + '\t' + str(ylow) + '\t' + str(yhigh)
+                previousValue = rTree[parentNodeId]
+                newValue = previousValue + parentsValue
+                rTree[parentNodeId] = newValue 
                 nodeId += 1
+                parentNodeCounter = 0
 
             leafNodeValue = ''
 
-print(rTree[parentNodeId])
-print(parentNodeId)
+#print(leafNodeValue)
+if counter != 0 :
+    xhigh = values [2]
+    yhigh = values[4]
+    rTree[nodeId] = leafNodeValue
+    if parentNodeCounter == 0 :
+        parentNodeId = nodeId + 1
+                #print(parentNodeId)
+        parentsValue = str(nodeId) + '\t' + str(xlow) + '\t' + str(xhigh) + '\t' + str(ylow) + '\t' + str(yhigh)
+        rTree[parentNodeId] = parentsValue
+        parentNodeList.append(parentNodeId)
+        parentNodeCounter += 1
+        nodeId += 2
+
+    elif parentNodeCounter < leafNodeSize - 1 :
+                #print('i got in and parent number is',parentNodeId)
+        parentsValue = str(nodeId) + '\t' + str(xlow) + '\t' + str(xhigh) + '\t' + str(ylow) + '\t' + str(yhigh)
+        previousValue = rTree[parentNodeId]
+        newValue = previousValue + parentsValue
+        rTree[parentNodeId] = newValue 
+
+        parentNodeCounter += 1
+        nodeId += 1
+
+    else :
+        parentsValue = str(nodeId) + '\t' + str(xlow) + '\t' + str(xhigh) + '\t' + str(ylow) + '\t' + str(yhigh)
+        previousValue = rTree[parentNodeId]
+        newValue = previousValue + parentsValue
+        rTree[parentNodeId] = newValue 
+        nodeId += 1
+        parentNodeCounter = 0
+
+
+print('number of blocks generated: ',nodeId)
+#print(parentNodeList)
+#print(rTree[4670],rTree[4677])
+for node in parentNodeList:
+    print(rTree[node])
+#print(rTree[parentNodeId])
+#print(parentNodeId)
