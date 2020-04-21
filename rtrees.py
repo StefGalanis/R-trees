@@ -152,9 +152,76 @@ if counter != 0 :
 
 
 print('number of blocks generated: ',nodeId)
+print(parentNodeList)
+upperLayerParents = []
+counter = 0
+parentNodeId = nodeId
+parentNodeCounter = 0
+while len(parentNodeList) > leafNodeSize :
+    parentListLength = len(parentNodeList)
+    xlowList = []
+    xhighList = []
+    ylowList = []
+    yhighList = []
+    for node in parentNodeList:
+        lines = rTree[node].split('\n')
+        lines = lines[:-1]
+        parentNodeList.remove(node)
+        linecounter = 0
+        if counter == 0 :
+
+            for line in lines :
+                values = line.split('\t')
+                if linecounter == 0 :
+                    xlow = values[1]
+                    ylow = values[3]
+                linecounter += 1
+        counter += 1
+        #print(counter,leafNodeSize)
+        if counter == leafNodeSize or counter == parentListLength :
+            
+            for line in lines :
+                values = line.split('\t')
+                #print('i am in')
+                if linecounter == len(lines)-1:
+                    xhigh = values[2]
+                    yhigh = values[4]
+                linecounter += 1
+        
+    
+        if counter == leafNodeSize or counter == parentListLength:
+            counter = 0
+            
+            if parentNodeCounter == 0 :
+                
+                parentNodeId = nodeId + 1
+                parentsValue = str(nodeId) + '\t' + str(xlow) + '\t' + str(xhigh) + '\t' + str(ylow) + '\t' + str(yhigh)
+                rTree[parentNodeId] = parentsValue
+                upperLayerParents.append(parentNodeId)
+                parentNodeCounter += 1
+                nodeId += 2
+
+            elif parentNodeCounter < leafNodeSize - 1 :
+                #print('i got in and parent number is',parentNodeId)
+                parentsValue = str(nodeId) + '\t' + str(xlow) + '\t' + str(xhigh) + '\t' + str(ylow) + '\t' + str(yhigh)
+                previousValue = rTree[parentNodeId]
+                newValue = previousValue + parentsValue
+                rTree[parentNodeId] = newValue 
+
+                parentNodeCounter += 1
+                nodeId += 1
+
+            else :
+                parentsValue = str(nodeId) + '\t' + str(xlow) + '\t' + str(xhigh) + '\t' + str(ylow) + '\t' + str(yhigh)
+                previousValue = rTree[parentNodeId]
+                newValue = previousValue + parentsValue
+                rTree[parentNodeId] = newValue 
+                nodeId += 1
+                parentNodeCounter = 0
+
+print(rTree[1],'\n',rTree[784])
 #print(parentNodeList)
-#print(rTree[4670],rTree[4677])
-for node in parentNodeList:
-    print(rTree[node])
 #print(rTree[parentNodeId])
+#for node in parentNodeList:
+#    print(rTree[node])
 #print(parentNodeId)
