@@ -222,18 +222,7 @@ nodeId -= 1
 print(rTree[nodeId])
 print('nodeid before loop:',nodeId)
 
-print('0 node',rTree[0])
-
-
-for node in parentNodeList :
-
-    print('\t\t\t',node)
-
-    print(rTree[node])
-
-    print('===============================================================')
-
-
+#print('0 node',rTree[4678])
 
 
 
@@ -263,7 +252,7 @@ for node in parentNodeList:
     #leafNodeValue += rTree[node]
 
     testList.append(node)
-    print('------------------------------------------------------------------')
+
     for line in lines :
         values = line.split('\t')
         
@@ -361,29 +350,48 @@ for node in parentNodeList:
             parentNodeCounter = 0
 
 height += 1
-print(rTree[4679])
+print(rTree[4678])
 print(parentNodeList)
 print(upperLayerParents)
 print(parentNodeId)
-print(nodeId)
+#print(nodeId)
 print(height)
 print('This is the number of nodes that tree has:',len(rTree))
 
 outputFile = open('R-tree.txt','w')
 
+outputFile.write(str(parentNodeId)+'\n'+str(height)+'\n')
 
-for i in range(len(rTree)-1,-1,-1):
-    
-    if i == len(rTree)-1 :
+nodes = rTree[parentNodeId].split('\n')
+print(nodes)
+#print(rTree[4677])
+nodes = nodes[:-1]
 
-        print('this is the root')
-        outputFile.write(str(i)+'\n'+str(height)+'\n')
+nodesToRemove = []
+nextLevelNodes = []
 
-    nodeValues = rTree[i]
-    lines = nodeValues.split('\n')
+while(len(nodes) != 0) :
+    iterations = 0
+    for node in nodes :
+        print(node)
+        #nodesToRemove.append(iterations)
+        outputFile.write(node +'\n')
+        #node = node[:-1]
+        #print(node)
+        values = node.split('\t')
+        nodeId = int(values[0])
+        #print(nodeId)
+        lines = rTree[nodeId].split('\n')
+        lines = lines[:-1]
+        for line in lines :
+            nextLevelNodes.append(line)
+        iterations += 1
+    nodes = nextLevelNodes
+    nextLevelNodes = []
+    #for i in nodesToRemove :
+    #    nodes.pop(i)    
+    print(nodes)    
 
-    print(lines)
-    break
 
 
 
