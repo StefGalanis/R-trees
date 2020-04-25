@@ -222,10 +222,6 @@ nodeId -= 1
 print(rTree[nodeId])
 print('nodeid before loop:',nodeId)
 
-#print('0 node',rTree[4678])
-
-
-
 parentNodeId = nodeId
 parentNodeCounter = 0
 parentNodeListLength = len(parentNodeList)
@@ -371,26 +367,33 @@ nodesToRemove = []
 nextLevelNodes = []
 
 while(len(nodes) != 0) :
-    iterations = 0
+
     for node in nodes :
-        print(node)
-        #nodesToRemove.append(iterations)
-        outputFile.write(node +'\n')
-        #node = node[:-1]
-        #print(node)
+        
         values = node.split('\t')
         nodeId = int(values[0])
-        #print(nodeId)
-        lines = rTree[nodeId].split('\n')
-        lines = lines[:-1]
-        for line in lines :
-            nextLevelNodes.append(line)
+
+        if nodeId < len(rTree):
+            lines = rTree[nodeId].split('\n')
+            if(lines[-1] == ''):
+                lines = lines[:-1]
+            numberOfRecords = len(lines)
+            header = str(nodeId) + ',' + str(numberOfRecords)
+            outputFile.write(header)
+            nodeToString = ''
+            for line in lines :
+                nextLevelNodes.append(line)
+                values = line.split('\t')
+                nodeToString += ',({0},<{1}>,<{2}>,<{3}>,<{4}>)'.format(*values)
+        else:
+            nextLevelNodes = []
+            break
         iterations += 1
+        nodeToString += '\n'
+        outputFile.write(nodeToString)
     nodes = nextLevelNodes
     nextLevelNodes = []
-    #for i in nodesToRemove :
-    #    nodes.pop(i)    
-    print(nodes)    
+      
 
 
 
