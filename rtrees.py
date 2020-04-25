@@ -365,6 +365,7 @@ nodes = nodes[:-1]
 
 nodesToRemove = []
 nextLevelNodes = []
+treeNodesCounter = len(rTree)
 
 while(len(nodes) != 0) :
 
@@ -372,8 +373,10 @@ while(len(nodes) != 0) :
         
         values = node.split('\t')
         nodeId = int(values[0])
+        
+        treeNodesCounter -= 1
 
-        if nodeId < len(rTree):
+        if nodeId < len(rTree) and treeNodesCounter != 0:
             lines = rTree[nodeId].split('\n')
             if(lines[-1] == ''):
                 lines = lines[:-1]
@@ -387,8 +390,9 @@ while(len(nodes) != 0) :
                 nodeToString += ',({0},<{1}>,<{2}>,<{3}>,<{4}>)'.format(*values)
         else:
             nextLevelNodes = []
+            #print(nodeId)
+            nodeToString = ''
             break
-        iterations += 1
         nodeToString += '\n'
         outputFile.write(nodeToString)
     nodes = nextLevelNodes
