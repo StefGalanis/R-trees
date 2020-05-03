@@ -182,20 +182,22 @@ with open('query_rectangles.txt') as rectanglesFile:
 results = open('nonLinearIntersectQuery.txt','w')
 
 startTime = time.time()
+totalNumberOfVisitedNodes = 0
+totalNumberOfResults = 0
 
 for queryRectangle in queryVector:
 
     rootValue = rTree[rootNode]
     rootValueCurrentPos = 0
     nodesThatIntersect = []
-    #visitedNodes = []
+    visitedNodes = []
     resultsVector = []
     results.write('\n QueryRectangle:'+str(queryRectangle)+'\n\n')
     while len(rootValue) != 0:
         for node in rootValue: 
             nodeId = node[0]
             if node[5] == 0:
-                #visitedNodes.append(nodeId)
+                visitedNodes.append(nodeId)
                 if intersects(queryRectangle,node):
                     nodeValue = rTree[nodeId]
                     for value in nodeValue:
@@ -213,32 +215,40 @@ for queryRectangle in queryVector:
                 rootValueCurrentPos += 1
                 if len(rootValue) == rootValueCurrentPos:
                     resultsVector.sort(key= lambda value : value[0])
+                    totalNumberOfResults += len(resultsVector)
                     for value in resultsVector:
                         results.write(str(value)+'\n')
                     rootValue = []
-    #print('number of nodes Visited:',len(visitedNodes))
+    totalNumberOfVisitedNodes += len(visitedNodes)
+    print('Query Rectangle:',queryRectangle)
+    print('number of nodes Visited:',len(visitedNodes))
+    print('number of Results:',len(visitedNodes))
 
 endTime = time.time()
 results.close()
 print('execution Time of intersect Query:',endTime-startTime)
+print('total number of Visited nodes for this query:',totalNumberOfVisitedNodes)
+print('total number of results for this query:',totalNumberOfResults)
 
 results = open('nonLinearInsideQuery.txt','w')
 
 startTime = time.time()
+totalNumberOfVisitedNodes = 0
+totalNumberOfResults = 0
 
 for queryRectangle in queryVector:
 
     rootValue = rTree[rootNode]
     rootValueCurrentPos = 0
     nodesThatIntersect = []
-    #visitedNodes = []
+    visitedNodes = []
     resultsVector = []
     results.write('\n QueryRectangle:'+str(queryRectangle)+'\n\n')
     while len(rootValue) != 0:
         for node in rootValue: 
             nodeId = node[0]
             if node[5]==0:
-                #visitedNodes.append(nodeId)
+                visitedNodes.append(nodeId)
                 if intersects(node,queryRectangle):
                     nodeValue = rTree[nodeId]
                     for value in nodeValue:
@@ -249,40 +259,48 @@ for queryRectangle in queryVector:
                     nodesThatIntersect = []
                     rootValueCurrentPos = 0
             else:
-                #visitedNodes.append(nodeId)
+                visitedNodes.append(nodeId)
                 if inside(node,queryRectangle):
                     resultsVector.append(node)
                     #results.write(str(node)+'\n')
                 rootValueCurrentPos += 1
                 if len(rootValue) == rootValueCurrentPos:
                     resultsVector.sort(key= lambda value : value[0])
+                    totalNumberOfResults += len(resultsVector)
                     for value in resultsVector:
                         results.write(str(value)+'\n')
                     rootValue = []
-    #print('number of nodes Visited:',len(visitedNodes))
+    totalNumberOfVisitedNodes += len(visitedNodes)
+    print('Query Rectangle:',queryRectangle)
+    print('number of nodes Visited:',len(visitedNodes))
+    print('number of Results:',len(visitedNodes))
 
 endTime = time.time()
 results.close()
 print('execution Time of inside Query:',endTime-startTime)
+print('total number of Visited nodes for this query:',totalNumberOfVisitedNodes)
+print('total number of results for this query:',totalNumberOfResults)
 
 
 results = open('nonLinearContainmentQuery.txt','w')
 
 startTime = time.time()
+totalNumberOfVisitedNodes = 0
+totalNumberOfResults = 0
 
 for queryRectangle in queryVector:
 
     rootValue = rTree[rootNode]
     rootValueCurrentPos = 0
     nodesThatIntersect = []
-    #visitedNodes = []
+    visitedNodes = []
     resultsVector = []
     results.write('\n QueryRectangle:'+str(queryRectangle)+'\n\n')
     while len(rootValue) != 0:
         for node in rootValue: 
             nodeId = node[0]
             if node[5] == 0:
-                #visitedNodes.append(nodeId)
+                visitedNodes.append(nodeId)
                 if inside(queryRectangle,node):
                     nodeValue = rTree[nodeId]
                     for value in nodeValue:
@@ -293,18 +311,25 @@ for queryRectangle in queryVector:
                     nodesThatIntersect = []
                     rootValueCurrentPos = 0
             else:
-                #visitedNodes.append(nodeId)
+                visitedNodes.append(nodeId)
                 if inside(queryRectangle,node) and nodeId in visitedNodes:
                     resultsVector.append(node)
                     #results.write(str(node)+'\n')
                 rootValueCurrentPos += 1
                 if len(rootValue) == rootValueCurrentPos:
                     resultsVector.sort(key= lambda value : value[0])
+                    totalNumberOfResults += len(resultsVector)
                     for value in resultsVector:
                         results.write(str(value)+'\n')
                     rootValue = []
-    #print('number of nodes Visited:',len(visitedNodes))
+    totalNumberOfVisitedNodes += len(visitedNodes)
+    print('Query Rectangle:',queryRectangle)
+    print('number of nodes Visited:',len(visitedNodes))
+    print('number of Results:',len(visitedNodes))
 
 endTime = time.time()
+results.close()
 
 print('execution Time of Containment Query:',endTime-startTime)
+print('total number of Visited nodes for this query:',totalNumberOfVisitedNodes)
+print('total number of results for this query:',totalNumberOfResults)
