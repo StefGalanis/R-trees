@@ -1,4 +1,5 @@
 import sys
+import time
 
 def printVector(vector):
     outputFile = open('justToCheckResults.txt','w')
@@ -9,9 +10,9 @@ def orderVector(vector,numberOfRecords):
     vector.sort(key= lambda value : value[1])
 
     numberOfSlices = int(len(vector)/68)
-    print('number of slices',numberOfSlices)
+    #print('number of slices',numberOfSlices)
     lastSliceLenth = numberOfRecords - numberOfSlices*68
-    print('last slice\'s length',lastSliceLenth)
+    #print('last slice\'s length',lastSliceLenth)
 
     for i in range(1,numberOfSlices):
         if i == numberOfSlices:
@@ -25,12 +26,27 @@ def orderVector(vector,numberOfRecords):
 def intersects(bValues,aValues) :
     
     if (bValues[1] < aValues[2] and bValues[2] > aValues[1] and bValues[4] > aValues[3] and bValues[3] < aValues[4]) :
-        print(bValues[0],' intersects with ',aValues[0])
-        #print(b)
-        #print(a)
+        #print(bValues[0],' intersects with ',aValues[0])
         return True
     else:
+        #print('some other relationship defines those two MBRs')
         return False
+
+def inside(bValues,aValues) :
+
+    if((bValues[4]<aValues[4] and bValues[1]>aValues[1]) and (bValues[2]<aValues[2] and bValues[3]>aValues[3])) :
+        #print(bValues[0],'is inside of',aValues[0])
+        return True
+    else:
+        #print('some other relationship defines those two MBRs')
+        return False
+
+def isParentNode(value):
+    if value == 0:
+        return True
+    elif value == 1:
+        return False
+
 
 fileName = sys.argv[1]
 #outputFileName = sys.argv[2]
@@ -49,12 +65,11 @@ with open(fileName) as rectanglesFile:
         xhigh = float(values[2])
         ylow = float(values[3])
         yhigh = float(values[4])
-        vector.append((objectId,xlow,xhigh,ylow,yhigh))
+        vector.append((objectId,xlow,xhigh,ylow,yhigh,1))
         numberOfRecords += 1
 
 vector = orderVector(vector,numberOfRecords)
 
-#sys.exit()
 
 rTree = []
 nodeValue = []
@@ -86,14 +101,11 @@ while len(vector) != 1 or sign == 0:
         numberOfRecordsRead += 1
 
         if numberOfRecordsRead == 28 or iterations == len(vector)-1:
-            #if flag == 1 :
-            #    printVector(nodeValue)
-            #    sys.exit(1)
             xlow.sort()
             xhigh.sort(reverse=True)
             ylow.sort()
             yhigh.sort(reverse=True)
-            parentVector.append((parentNodeId,xlow[0],xhigh[0],ylow[0],yhigh[0]))
+            parentVector.append((parentNodeId,xlow[0],xhigh[0],ylow[0],yhigh[0],0))
             rTree.append(nodeValue)
             xlow = []
             xhigh = []
@@ -106,19 +118,17 @@ while len(vector) != 1 or sign == 0:
         iterations += 1
 
         if iterations == len(vector):
-            #if sign == 1:
-            #    flag = 1
             numberOfRecords = len(parentVector)
-            print('numberOfrecords',numberOfRecords)
+            #print('numberOfrecords',numberOfRecords)
             vector = orderVector(parentVector,numberOfRecords)
             parentVector=[]
             numberOfRecordsRead = 0
             iterations = 0
             level += 1
-            print('everything is gonna be allright',len(vector))
+            #print('everything is gonna be allright',len(vector))
 
 outputFile = open('newRTree.txt','w')
-print(level)
+print('tree height:',level)
 rootNode = len(rTree) - 1
 outputFile.write(str(rootNode)+'\n'+str(level)+'\n')
 
@@ -142,7 +152,6 @@ while len(rootValue) != 0:
                 nodeToString += ',({0},<{1}>,<{2}>,<{3}>,<{4}>)'.format(*childNode)
                 nextLevelNodes.append(childNode)
             treeNodesCounter += 1
-            #printVector(nextLevelNodes)
             outputFile.write(nodeToString + '\n')
             
             
@@ -150,10 +159,8 @@ while len(rootValue) != 0:
                 rootValue = nextLevelNodes
                 nextLevelNodes = []
                 treeNodesCounter = 0
-                printVector(rootValue)
+                #printVector(rootValue)
         else:
-            #print(node[0])
-            #printVector(rTree[4516])
             rootValue = []
             break
 
@@ -171,42 +178,133 @@ with open('query_rectangles.txt') as rectanglesFile:
         queryVector.append((objectId,xlow,xhigh,ylow,yhigh))
         numberOfRecords += 1
 
-printVector(queryVector)
 
-rootValue = rTree[rootNode]
+results = open('nonLinearIntersectQuery.txt','w')
 
-queryRectangle = (2,0.262529,0.26957,0.145519,0.151145)
-rootValueCurrentPos = 0
-nodesThatIntersect = []
-visitedNodes = []
-results = open('justToCheckResults.txt','w')
-#counter = 1
+startTime = time.time()
 
-while len(rootValue) != 0:
-    for node in rootValue: 
-        nodeId = node[0]
-        #counter += 1
-        if nodeId < len(rTree) and (nodeId not in visitedNodes):
-            visitedNodes.append(nodeId)
-            if intersects(queryRectangle,node):
-                nodeValue = rTree[nodeId]
-                #print(len(nodeValue))
-                for value in nodeValue:
-                    nodesThatIntersect.append(value)
-            rootValueCurrentPos += 1
-            if rootValueCurrentPos == len(rootValue):
-                #print(nodesThatIntersect)
-                rootValue = nodesThatIntersect
-                nodesThatIntersect = []
-                rootValueCurrentPos = 0
-        else:
-            if intersects(queryRectangle,node):
-                results.write(str(node)+'\n')
-            rootValueCurrentPos += 1
-            if len(rootValue) == rootValueCurrentPos:
-                rootValue = []
-            #print(len(rootValue))
-            #sys.exit(1)
-            
-            #print(node)
-        
+for queryRectangle in queryVector:
+
+    rootValue = rTree[rootNode]
+    rootValueCurrentPos = 0
+    nodesThatIntersect = []
+    #visitedNodes = []
+    resultsVector = []
+    results.write('\n QueryRectangle:'+str(queryRectangle)+'\n\n')
+    while len(rootValue) != 0:
+        for node in rootValue: 
+            nodeId = node[0]
+            if node[5] == 0:
+                #visitedNodes.append(nodeId)
+                if intersects(queryRectangle,node):
+                    nodeValue = rTree[nodeId]
+                    for value in nodeValue:
+                        nodesThatIntersect.append(value)
+                rootValueCurrentPos += 1
+                if rootValueCurrentPos == len(rootValue):
+                    rootValue = nodesThatIntersect
+                    nodesThatIntersect = []
+                    rootValueCurrentPos = 0
+            else:
+                visitedNodes.append(nodeId)
+                if intersects(queryRectangle,node):
+                    resultsVector.append(node)
+                    #results.write(str(node)+'\n')
+                rootValueCurrentPos += 1
+                if len(rootValue) == rootValueCurrentPos:
+                    resultsVector.sort(key= lambda value : value[0])
+                    for value in resultsVector:
+                        results.write(str(value)+'\n')
+                    rootValue = []
+    #print('number of nodes Visited:',len(visitedNodes))
+
+endTime = time.time()
+results.close()
+print('execution Time of intersect Query:',endTime-startTime)
+
+results = open('nonLinearInsideQuery.txt','w')
+
+startTime = time.time()
+
+for queryRectangle in queryVector:
+
+    rootValue = rTree[rootNode]
+    rootValueCurrentPos = 0
+    nodesThatIntersect = []
+    #visitedNodes = []
+    resultsVector = []
+    results.write('\n QueryRectangle:'+str(queryRectangle)+'\n\n')
+    while len(rootValue) != 0:
+        for node in rootValue: 
+            nodeId = node[0]
+            if node[5]==0:
+                #visitedNodes.append(nodeId)
+                if intersects(node,queryRectangle):
+                    nodeValue = rTree[nodeId]
+                    for value in nodeValue:
+                        nodesThatIntersect.append(value)
+                rootValueCurrentPos += 1
+                if rootValueCurrentPos == len(rootValue):
+                    rootValue = nodesThatIntersect
+                    nodesThatIntersect = []
+                    rootValueCurrentPos = 0
+            else:
+                #visitedNodes.append(nodeId)
+                if inside(node,queryRectangle):
+                    resultsVector.append(node)
+                    #results.write(str(node)+'\n')
+                rootValueCurrentPos += 1
+                if len(rootValue) == rootValueCurrentPos:
+                    resultsVector.sort(key= lambda value : value[0])
+                    for value in resultsVector:
+                        results.write(str(value)+'\n')
+                    rootValue = []
+    #print('number of nodes Visited:',len(visitedNodes))
+
+endTime = time.time()
+results.close()
+print('execution Time of inside Query:',endTime-startTime)
+
+
+results = open('nonLinearContainmentQuery.txt','w')
+
+startTime = time.time()
+
+for queryRectangle in queryVector:
+
+    rootValue = rTree[rootNode]
+    rootValueCurrentPos = 0
+    nodesThatIntersect = []
+    #visitedNodes = []
+    resultsVector = []
+    results.write('\n QueryRectangle:'+str(queryRectangle)+'\n\n')
+    while len(rootValue) != 0:
+        for node in rootValue: 
+            nodeId = node[0]
+            if node[5] == 0:
+                #visitedNodes.append(nodeId)
+                if inside(queryRectangle,node):
+                    nodeValue = rTree[nodeId]
+                    for value in nodeValue:
+                        nodesThatIntersect.append(value)
+                rootValueCurrentPos += 1
+                if rootValueCurrentPos == len(rootValue):
+                    rootValue = nodesThatIntersect
+                    nodesThatIntersect = []
+                    rootValueCurrentPos = 0
+            else:
+                #visitedNodes.append(nodeId)
+                if inside(queryRectangle,node) and nodeId in visitedNodes:
+                    resultsVector.append(node)
+                    #results.write(str(node)+'\n')
+                rootValueCurrentPos += 1
+                if len(rootValue) == rootValueCurrentPos:
+                    resultsVector.sort(key= lambda value : value[0])
+                    for value in resultsVector:
+                        results.write(str(value)+'\n')
+                    rootValue = []
+    #print('number of nodes Visited:',len(visitedNodes))
+
+endTime = time.time()
+
+print('execution Time of Containment Query:',endTime-startTime)
